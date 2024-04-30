@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../widgets/drawer_menu.dart';
 import '../widgets/add_bin_dialog.dart';
@@ -14,6 +15,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  LatLng _initialPosition = LatLng(35.6895, 139.6917); // デフォルトの位置情報
   GoogleMapController? mapController;
   BitmapDescriptor? customIcon;
   Set<Marker> _markers = {};
@@ -29,6 +31,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    _determinePosition();
     _setCustomIcon();
     _loadMarkers();
   }
@@ -36,6 +39,38 @@ class _MapScreenState extends State<MapScreen> {
   void _setCustomIcon() async {
     customIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(), 'assets/pin/trash-bin-app.png');
+  }
+
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // 位置情報サービスが有効でない場合の処理
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // パーミッションが拒否された場合の処理
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // パーミッションが永久に拒否された場合の処理
+      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // 現在の位置を取得
+    Position position = await Geolocator.getCurrentPosition();
+    setState(() {
+      _initialPosition = LatLng(position.latitude, position.longitude);
+    });
   }
 
   void _loadMarkers() async {
@@ -123,8 +158,8 @@ class _MapScreenState extends State<MapScreen> {
             flex: 2,
             child: GoogleMap(
               onMapCreated: _onMapCreated,
-              initialCameraPosition: const CameraPosition(
-                target: LatLng(35.6895, 139.6917),
+              initialCameraPosition: CameraPosition(
+                target: _initialPosition,
                 zoom: 12.0,
               ),
               myLocationEnabled: true,
