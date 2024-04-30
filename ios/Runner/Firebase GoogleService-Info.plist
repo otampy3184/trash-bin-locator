@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1021109890304-dm93f3c3u24vn53smohhi4rqvm2if0ua.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1021109890304-dm93f3c3u24vn53smohhi4rqvm2if0ua</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAg6hSXkHFGh52JElCwA3JkalILADRZ0F8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1021109890304</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.trashBinLocator</string>
+	<key>PROJECT_ID</key>
+	<string>trash-bin-locator-421808</string>
+	<key>STORAGE_BUCKET</key>
+	<string>trash-bin-locator-421808.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1021109890304:ios:6a5955170258bf7b55d7e5</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+	    <dict>
+	        <key>CFBundleTypeRole</key>
+	        <string>Editor</string>
+	        <key>CFBundleURLSchemes</key>
+	        <array>
+	            <string>com.googleusercontent.apps.1021109890304-dm93f3c3u24vn53smohhi4rqvm2if0ua</string>
+	        </array>
+	    </dict>
+	</array>
+</dict>
+</plist>
