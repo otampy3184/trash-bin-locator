@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../widgets/drawer_menu.dart';
 import '../widgets/add_bin_dialog.dart';
+import '../widgets/bin_card.dart';
 
 import '../services/firestore_service.dart';
 import '../services/markers_service.dart';
@@ -34,13 +35,13 @@ class _MapScreenState extends State<MapScreen> {
     _determinePosition();
     _setCustomIcon();
     _loadMarkers();
+    _loadCards();
   }
 
   void _setCustomIcon() async {
     customIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(), 'assets/pin/trash-bin-app.png');
   }
-
 
   Future<void> _determinePosition() async {
     bool serviceEnabled;
@@ -63,7 +64,8 @@ class _MapScreenState extends State<MapScreen> {
 
     if (permission == LocationPermission.deniedForever) {
       // パーミッションが永久に拒否された場合の処理
-      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
     }
 
     // 現在の位置を取得
@@ -81,6 +83,18 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  void _loadCards() async {
+    if (mapController != null) {
+      // mapControllerがnullでないことを確認
+      LatLngBounds bounds = await mapController!.getVisibleRegion();
+      var visibleMarkers =
+          _markers.where((marker) => bounds.contains(marker.position)).toList();
+      _updateCards(visibleMarkers);
+    } else {
+      print("mapController is not initialized yet.");
+    }
+  }
+
   void _addMarker(LatLng position, String description) {
     final marker = Marker(
       markerId: MarkerId(position.toString()),
@@ -95,6 +109,7 @@ class _MapScreenState extends State<MapScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    _loadCards(); // mapControllerが初期化された後に_loadCardsを呼び出す
   }
 
   void _onCameraIdle() async {
@@ -106,16 +121,10 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _updateCards(List<Marker> visibleMarkers) {
-    List<Widget> newCards = visibleMarkers.map((marker) {
-      return Card(
-        margin: EdgeInsets.all(8),
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: ListTile(
-          title: Text(marker.infoWindow.title ?? "Unnamed"),
-          subtitle: Text(marker.infoWindow.snippet ?? "No description"),
-        ),
-      );
+    List<Widget> newCards = visibleMarkers.asMap().entries.map((entry) {
+      int idx = entry.key;
+      Marker marker = entry.value;
+      return TrashBinCard(marker: marker, index: idx, cardColor: Colors.white);
     }).toList();
 
     setState(() {
@@ -132,6 +141,18 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  void _goToCurrentLocation() async {
+    // 現在の位置情報を取得
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    mapController?.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: LatLng(position.latitude, position.longitude),
+        zoom: 15.0,
+      ),
+    ));
+  }
+
   void _showAddBinDialog(BuildContext context, LatLng position) {
     AddBinDialog.showAddBinDialog(
         context, position, _addMarker, _firestoreService.addTrashBinLocation);
@@ -141,7 +162,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trash Bin Locator'),
+        title: Text('ごみ箱まっぷ'),
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
@@ -152,26 +173,77 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
       drawer: DrawerMenu(),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            flex: 2,
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _initialPosition,
-                zoom: 12.0,
-              ),
-              myLocationEnabled: true,
-              markers: _markers,
-              onLongPress: _onMapLongPress, // 長押しイベントを追加
-              onCameraIdle: _onCameraIdle,
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _initialPosition,
+              zoom: 12.0,
+            ),
+            myLocationEnabled: true,
+            markers: _markers,
+            onLongPress: _onMapLongPress,
+            onCameraIdle: _onCameraIdle,
+          ),
+          Positioned(
+            right: 10,
+            top: 10, // 任意の位置に配置
+            child: FloatingActionButton(
+              onPressed: _goToCurrentLocation,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.my_location, color: Colors.black),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: PageView(
-              children: cards,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.3, // 画面の高さの30%を使用
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    color: Colors.black12,
+                    spreadRadius: 5,
+                  )
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("付近のごみ箱一覧",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: Icon(Icons.filter_none),
+                          onPressed: () {
+                            // ここにフィルタリングロジックを追加
+                            print("Filter button pressed");
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: cards.length,
+                      itemBuilder: (context, index) {
+                        return cards[index];
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
