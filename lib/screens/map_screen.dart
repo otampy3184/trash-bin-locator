@@ -68,24 +68,38 @@ class _MapScreenState extends State<MapScreen> {
           'Location permissions are permanently denied, we cannot request permissions.');
     }
 
-    // 現在の位置を取得
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _initialPosition = LatLng(position.latitude, position.longitude);
     });
   }
 
+  Future<double> _calculateDistanceToMarker(LatLng markerPosition) async {
+    Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    return Geolocator.distanceBetween(
+      currentPosition.latitude,
+      currentPosition.longitude,
+      markerPosition.latitude,
+      markerPosition.longitude,
+    );
+  }
+
   void _loadMarkers() async {
-    var docs = await _firestoreService.loadMarkers();
-    var markers = _markerService.getMarkers(docs, customIcon!);
-    setState(() {
-      _markers = markers;
-    });
+    try {
+      var docs = await _firestoreService.loadMarkers();
+      var markers = await _markerService.getMarkers(
+          docs, customIcon!);
+      setState(() {
+        _markers = markers;
+      });
+    } catch (e) {
+      print("Failed to load markers: $e");
+    }
   }
 
   void _loadCards() async {
     if (mapController != null) {
-      // mapControllerがnullでないことを確認
       LatLngBounds bounds = await mapController!.getVisibleRegion();
       var visibleMarkers =
           _markers.where((marker) => bounds.contains(marker.position)).toList();
@@ -95,11 +109,15 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _addMarker(LatLng position, String description) {
+  void _addMarker(LatLng position, String description) async {
+    double distance = await _calculateDistanceToMarker(position);
+    String distanceText = _formatDistance(distance);
+
     final marker = Marker(
       markerId: MarkerId(position.toString()),
       position: position,
-      infoWindow: InfoWindow(title: 'Trash Bin', snippet: description),
+      infoWindow: InfoWindow(
+          title: description, snippet: '現在地から$distanceText'),
       icon: customIcon ?? BitmapDescriptor.defaultMarker,
     );
     setState(() {
@@ -107,9 +125,15 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  String _formatDistance(double distance) {
+    return distance < 500
+        ? '${distance.toStringAsFixed(0)} m'
+        : '${(distance / 1000).toStringAsFixed(1)} km';
+  }
+
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
-    _loadCards(); // mapControllerが初期化された後に_loadCardsを呼び出す
+    _loadCards();
   }
 
   void _onCameraIdle() async {
@@ -175,16 +199,22 @@ class _MapScreenState extends State<MapScreen> {
       drawer: DrawerMenu(),
       body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _initialPosition,
-              zoom: 12.0,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: MediaQuery.of(context).size.height * 0.2,
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _initialPosition,
+                zoom: 12.0,
+              ),
+              myLocationEnabled: true,
+              markers: _markers,
+              onLongPress: _onMapLongPress,
+              onCameraIdle: _onCameraIdle,
             ),
-            myLocationEnabled: true,
-            markers: _markers,
-            onLongPress: _onMapLongPress,
-            onCameraIdle: _onCameraIdle,
           ),
           Positioned(
             right: 10,
@@ -224,12 +254,23 @@ class _MapScreenState extends State<MapScreen> {
                         Text("付近のごみ箱一覧",
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold)),
-                        IconButton(
-                          icon: Icon(Icons.filter_none),
-                          onPressed: () {
-                            // ここにフィルタリングロジックを追加
-                            print("Filter button pressed");
-                          },
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.sort),
+                              onPressed: () {
+                                // TODO: ソートロジックを追加
+                                print("Sort button pressed");
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.filter_list),
+                              onPressed: () {
+                                // TODO: フィルタリングロジックを追加
+                                print("Filter button pressed");
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -249,11 +290,5 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 }

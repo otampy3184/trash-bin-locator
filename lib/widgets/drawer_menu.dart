@@ -51,24 +51,24 @@ class _DrawerMenuState extends State<DrawerMenu> {
         : 'Not logged in';
     return Drawer(
       child: Container(
-        color: Colors.blue,
+        color: Colors.white,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.white,
               ),
               child: Text(
                 headerText,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontSize: 24,
                 ),
               ),
             ),
             ListTile(
-              title: Text('Login', style: TextStyle(color: Colors.white)),
+              title: Text('Login', style: TextStyle(color: Colors.black)),
               onTap: () async {
                 final user = await _handleSignIn();
                 if (user != null) {
@@ -79,7 +79,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
               },
             ),
             ListTile(
-              title: Text('Logout', style: TextStyle(color: Colors.white)),
+              title: Text('Logout', style: TextStyle(color: Colors.black)),
               onTap: () async {
                 await _handleSignOut();
                 Navigator.pop(context);

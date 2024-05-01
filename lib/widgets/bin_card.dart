@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 class TrashBinCard extends StatelessWidget {
   final Marker marker;
@@ -10,6 +11,17 @@ class TrashBinCard extends StatelessWidget {
       {required this.marker,
       required this.index,
       this.cardColor = Colors.white});
+
+  Future<double> _calculateDistance(LatLng markerPosigion) async {
+    Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    double distanceMeters = Geolocator.distanceBetween(
+        currentPosition.latitude,
+        currentPosition.longitude,
+        markerPosigion.latitude,
+        markerPosigion.longitude);
+    return distanceMeters;
+  }
 
   void _showDetails(BuildContext context) {
     showModalBottomSheet(
@@ -58,7 +70,6 @@ class TrashBinCard extends StatelessWidget {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     return Card(
       color: cardColor,
@@ -66,9 +77,23 @@ class TrashBinCard extends StatelessWidget {
         onTap: () => _showDetails(context),
         child: ListTile(
           title: Text(marker.infoWindow.title ?? "Unnamed"),
-          subtitle: Text(marker.infoWindow.snippet ?? "No description"),
+
+          // TODO: カードのリアルタイムソートは処理として重くなるため今後チューニングしてから実装
+          // subtitle: FutureBuilder<double>(
+          //   future: _calculateDistance(marker.position),
+          //   builder: (context, snapshot) {
+          //     double distance = snapshot.data!;
+          //     // 500m以上ならキロメートル単位で表示
+          //     if (distance >= 500) {
+          //       double distanceInKm = distance / 1000; // メートルをキロメートルに変換
+          //       return Text("現在地から${distanceInKm.toStringAsFixed(1)}キロメートル");
+          //     } else {
+          //       return Text("現在地から${distance.toStringAsFixed(1)}メートル");
+          //     }
+          //   },
+          // ),
+          splashColor: Colors.blueGrey.withOpacity(0.3), // 波紋の色を設定
         ),
-        splashColor: Colors.blueGrey.withOpacity(0.3), // 波紋の色を設定
       ),
     );
   }
