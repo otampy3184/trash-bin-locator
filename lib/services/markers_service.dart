@@ -34,12 +34,12 @@ class MarkerService {
           icon: icon,
         );
       } else {
-        LatLng position = LatLng(0.0, 0.0);
+        LatLng position = const LatLng(0.0, 0.0);
         return Marker(
-          markerId: MarkerId('default'),
+          markerId: const MarkerId('default'),
           position: position,
           infoWindow:
-              InfoWindow(title: 'Undefined', snippet: 'No data available'),
+              const InfoWindow(title: 'Undefined', snippet: 'No data available'),
           icon: icon,
         );
       }

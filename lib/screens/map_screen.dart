@@ -16,7 +16,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  LatLng _initialPosition = LatLng(35.6895, 139.6917); // デフォルトの位置情報
+  LatLng _initialPosition = const LatLng(35.6895, 139.6917); // デフォルトの位置情報
   GoogleMapController? mapController;
   BitmapDescriptor? customIcon;
   Set<Marker> _markers = {};
@@ -40,7 +40,7 @@ class _MapScreenState extends State<MapScreen> {
 
   void _setCustomIcon() async {
     customIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(), 'assets/pin/trash-bin-app.png');
+        const ImageConfiguration(), 'assets/pin/trash-bin-app.png');
   }
 
   Future<void> _determinePosition() async {
@@ -161,7 +161,7 @@ class _MapScreenState extends State<MapScreen> {
       _showAddBinDialog(context, position);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("You need to log in to add bins.")));
+          const SnackBar(content: Text("You need to log in to add bins.")));
     }
   }
 
@@ -186,11 +186,11 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ごみ箱まっぷ'),
+        title: const Text('ごみ箱まっぷ'),
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
-              icon: Icon(Icons.menu),
+              icon: const Icon(Icons.menu),
               onPressed: () => Scaffold.of(context).openDrawer(),
             );
           },
@@ -223,14 +223,14 @@ class _MapScreenState extends State<MapScreen> {
               onPressed: _goToCurrentLocation,
               materialTapTargetSize: MaterialTapTargetSize.padded,
               backgroundColor: Colors.white,
-              child: Icon(Icons.my_location, color: Colors.black),
+              child: const Icon(Icons.my_location, color: Colors.black),
             ),
           ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               height: MediaQuery.of(context).size.height * 0.3, // 画面の高さの30%を使用
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(24),
@@ -247,24 +247,24 @@ class _MapScreenState extends State<MapScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("付近のごみ箱一覧",
+                        const Text("付近のごみ箱一覧",
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold)),
                         Row(
                           children: [
                             IconButton(
-                              icon: Icon(Icons.sort),
+                              icon: const Icon(Icons.sort),
                               onPressed: () {
                                 // TODO: ソートロジックを追加
                                 print("Sort button pressed");
                               },
                             ),
                             IconButton(
-                              icon: Icon(Icons.filter_list),
+                              icon: const Icon(Icons.filter_list),
                               onPressed: () {
                                 // TODO: フィルタリングロジックを追加
                                 print("Filter button pressed");

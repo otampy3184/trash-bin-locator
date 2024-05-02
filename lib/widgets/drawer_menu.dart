@@ -56,19 +56,19 @@ class _DrawerMenuState extends State<DrawerMenu> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
               ),
               child: Text(
                 headerText,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 24,
                 ),
               ),
             ),
             ListTile(
-              title: Text('Login', style: TextStyle(color: Colors.black)),
+              title: const Text('Login', style: TextStyle(color: Colors.black)),
               onTap: () async {
                 final user = await _handleSignIn();
                 if (user != null) {
@@ -79,12 +79,12 @@ class _DrawerMenuState extends State<DrawerMenu> {
               },
             ),
             ListTile(
-              title: Text('Logout', style: TextStyle(color: Colors.black)),
+              title: const Text('Logout', style: TextStyle(color: Colors.black)),
               onTap: () async {
                 await _handleSignOut();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Logged out successfully")));
+                    const SnackBar(content: Text("Logged out successfully")));
               },
             ),
           ],
